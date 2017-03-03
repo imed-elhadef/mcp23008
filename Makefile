@@ -10,10 +10,10 @@ DEPS = mcp23008.h
 OBJ = demo.o  mcp23008.o i2c_bus.o
 
 %.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) 
 
 demo: $(OBJ)
-	gcc -o $@ $^ $(CFLAGS)
+	gcc -o $@ $^ $(CFLAGS) -lwiringPi
 
 clean :
 	rm *.o demo

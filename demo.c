@@ -6,15 +6,38 @@
 #include <errno.h>
 #include <string.h>
 #include "mcp23008.h"
+#include <wiringPi.h>
+
+#define MYFLAG  0x30
+#define BADFLAG 0xFF
 
 mcp23008 mcp23008_dev;
 const char *I2CDEV = "/dev/i2c-1"; 
+static volatile int handlerFlag=0;
+
+void InterruptHandler (void)
+ {
+ handlerFlag++;
+ if (handlerFlag==1)
+ handlerFlag=MYFLAG;
+ else 
+ handlerFlag=BADFLAG;
+ //printf("global counter=%d\n",globalCounter);
+ }
 
 int main()
 {
         char buffer[12];
+        char  interrupt_status;//read the GPIO number where the interrupt was triggered
+        char  intterrupt_capture;//read the gpio status when the interrut was occured 
 
 	printf("Start Program \n");
+        //Configure mcp23008 INT pin for Raspberry 
+        wiringPiSetup ();
+        pinMode(16, INPUT);// Set call button as INPUT
+        pullUpDnControl(16, PUD_DOWN);// Enable pull-down resistor on button
+        wiringPiISR (27, INT_EDGE_RISING, &InterruptHandler) ;//ISR handler config
+
 	//Open the mcp23008 I2C GPIO Expander
         mcp23008_open(I2CDEV,MCP23008_ADR,&mcp23008_dev);  
         //Set GPIO direction
@@ -62,7 +85,21 @@ int main()
 	while(1)
 	{
          //Nothing
-		
+          if(handlerFlag==MYFLAG)
+           {   
+            printf("Interrupt was occured\n");
+            //sleep(1);
+            interrupt_status=mcp23008_read_byte(&mcp23008_dev,MCP23008_INTF);//read the GPIO number where the interrupt was triggered
+            if(interrupt_status & POWER_BUTTON_MASK)
+            //power button was bushed
+            system("sudo poweroff");
+            else if(interrupt_status & PUSH_SENSOR_MASK )
+            //push sensor is on
+            printf("do an action here!!!\n);  
+            intterrupt_capture=mcp23008_read_byte(&mcp23008_dev,MCP23008_INTCAP);//read the gpio status when the interrut was occured
+            handlerFlag=0;
+           } 
+            		
 	}
 
 	return 0;
