@@ -38,6 +38,15 @@
 
 #define IODIR_MASK                  0xC0 //0b11000000 
 #define GPINTEN_MASK                0xC0 //0b11000000
+#define DEFVAL_MASK                 0xC0 //0b11000000
+#define INTCON_MASK                 0xC0 //0b11000000
+
+#define RELAY_MASK                  0x20 //0b00100000
+#define LED_MASK                    0x10 //0b00010000
+#define DEACTIVATE_MASK             0x00 //0b00000000
+
+#define POWER_BUTTON_MASK           0x80 //0b10000000
+#define PUSH_SENSOR_MASK            0x40 //0b01000000
 
 
 typedef struct _i2c_device
